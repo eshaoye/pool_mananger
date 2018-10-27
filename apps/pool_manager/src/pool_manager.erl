@@ -72,9 +72,18 @@ handle_call(_Request, _From, State) ->
 %%% handle_cast/2
 %%% -----------------------------------------------------------------
 handle_cast({checkin, Pid}, #state{workers = W,
-                                    used = U} = State) ->   
-    {noreply, State#state{workers = [Pid | W],
-                          used = U -- [Pid]}};
+                                   workers_num = InitNum,
+                                   used  = U,
+                                   worker_mod = Mod} = State) ->   
+    case erlang:length(U) > InitNum of
+        true ->
+            unlink(Pid),
+            Mod:stop(Pid),
+            {noreply, State#state{used = U -- [Pid]}};
+        false ->
+            {noreply, State#state{workers = [Pid | W],
+                          used = U -- [Pid]}}     
+    end;
 handle_cast(_Request, State) ->
     {noreply, State}.
 
