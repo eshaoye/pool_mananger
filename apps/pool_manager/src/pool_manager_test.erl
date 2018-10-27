@@ -18,3 +18,13 @@ test2() ->
     PidList = element(5, State),
     exit(lists:nth(1, PidList), kill),
     sys:get_state(pool_1).
+
+
+test3() ->
+    pool_manager:start(pool_1, 2, db_test, 2),
+    Pid1 = pool_manager:checkout(pool_1),
+    Pid2 = pool_manager:checkout(pool_1),
+    Pid3 = pool_manager:checkout(pool_1),
+    Pid4 = pool_manager:checkout(pool_1),
+    {error, no_workers} = pool_manager:checkout(pool_1),
+    sys:get_state(pool_1).
