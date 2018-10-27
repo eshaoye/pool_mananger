@@ -1,0 +1,39 @@
+%%%-------------------------------------------------------------------
+%% @doc pool_manager top level supervisor.
+%% @end
+%%%-------------------------------------------------------------------
+
+-module(pool_manager_sup).
+
+-behaviour(supervisor).
+
+%% API
+-export([start_link/0,
+        start_child/1]).
+
+%% Supervisor callbacks
+-export([init/1]).
+
+-define(SERVER, ?MODULE).
+
+%%====================================================================
+%% API functions
+%%====================================================================
+
+start_link() ->
+    supervisor:start_link({local, ?SERVER}, ?MODULE, []).
+
+start_child(Args) ->
+    ok.
+
+%%====================================================================
+%% Supervisor callbacks
+%%====================================================================
+
+%% Child :: {Id,StartFunc,Restart,Shutdown,Type,Modules}
+init([]) ->
+    {ok, { {one_for_all, 0, 1}, []} }.
+
+%%====================================================================
+%% Internal functions
+%%====================================================================

@@ -1,0 +1,6 @@
+-sname pool_manager
+
+-setcookie pool_manager_cookie
+
++K true
++A30
