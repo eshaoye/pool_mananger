@@ -19,5 +19,8 @@ tar:
 run:
 	@./rebar3 run
 
+console:
+	@./rebar shell
+
 clean:
 	@./rebar3 clean --all

@@ -1,4 +1,4 @@
--module(db_test).
+-module(db_worker).
 -behaviour(gen_server).
 
 %%% =================================================================

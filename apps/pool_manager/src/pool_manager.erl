@@ -31,7 +31,7 @@ start(PoolName, WorkersNum, WorkerMod, Overflow) ->
     gen_server:start({local, PoolName}, ?MODULE, [WorkersNum, WorkerMod, Overflow], []).
 
 stop(PoolName) ->
-    ok.
+    gen_server:stop(PoolName).
 
 checkout(PoolName) ->
     gen_server:call(PoolName, checkout).
