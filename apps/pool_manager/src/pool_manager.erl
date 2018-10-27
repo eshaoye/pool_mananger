@@ -18,7 +18,7 @@
 -record(state, {
     workers_num = 0,
     worker_mod = undefined,
-    used = 0,
+    used = [],
     workers = []
 }).
 
@@ -36,7 +36,7 @@ checkin(PoolName, Pid) ->
 
 init([WorkersNum, WorkerMod]) ->
     process_flag(trap_exit, true),
-    Workers = [begin P = WorkerMod:start_link(), P end || _ <- lists:seq(1, WorkersNum)],
+    Workers = [begin {ok, P} = WorkerMod:start_link(), P end || _ <- lists:seq(1, WorkersNum)],
     {ok, #state{workers_num = WorkersNum,
                 worker_mod = WorkerMod,
                 workers = Workers}}.
@@ -46,7 +46,7 @@ handle_call(checkout, _From, #state{workers = []} = State) ->
 handle_call(checkout, _From, #state{workers = [P | T],
                                     used = U} = State) ->
     {reply, P, State#state{workers = T,
-                            used = U + 1}};
+                            used = [P | U]}};
 handle_call(_Request, _From, State) ->
     {reply, ok, State}.
 
@@ -56,13 +56,26 @@ handle_call(_Request, _From, State) ->
 handle_cast({checkin, Pid}, #state{workers = W,
                                     used = U} = State) ->
     {noreply, State#state{workers = [Pid | W],
-                          used = U - 1}};
+                          used = U -- [Pid]}};
 handle_cast(_Request, State) ->
     {noreply, State}.
 
 %%% -----------------------------------------------------------------
 %%% handle_info/2
 %%% -----------------------------------------------------------------
+handle_info({'EXIT', From, Reason}, #state{workers = W,
+                                            used = U,
+                                            worker_mod = Mod} = State) ->
+    case lists:member(From, W) of
+        true ->
+            {ok, P} = Mod:start_link(),
+            {noreply, State#state{workers = [P | W] -- [From],
+                                  used = U -- [From]}};
+        false ->
+            {ok, P} = Mod:start_link(),
+            {noreply, State#state{workers = [P | W],
+                                  used = U -- [From]}}
+    end;
 handle_info(_, State) ->
     {noreply, State}.
 
